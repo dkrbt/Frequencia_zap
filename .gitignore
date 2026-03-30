@@ -50,3 +50,13 @@ evolution_store/
 # Arquivos de sistema
 .DS_Store
 Thumbs.db
+
+# Processamento de dados e Scrapers (Manter Local)
+backend_processor/
+
+# Scripts de Teste (Testers) e Binários locais
+tester_evolution.py
+test_siap.py
+*.exe
+*.spec
+debug_html/

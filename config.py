@@ -6,13 +6,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurações da API da escola
-SCHOOL_API_URL = os.getenv('SCHOOL_API_URL', 'https://api.escola.com/presenca')
-SCHOOL_API_TOKEN = os.getenv('SCHOOL_API_TOKEN', 'token_padrao')
+SCHOOL_API_URL = os.getenv('SCHOOL_API_URL')
+SCHOOL_API_TOKEN = os.getenv('SCHOOL_API_TOKEN')
 
 # Configurações da Evolution API (WhatsApp)
-EVOLUTION_API_URL = os.getenv('EVOLUTION_API_URL', 'https://api.evolution.com/send')
-EVOLUTION_API_TOKEN = os.getenv('EVOLUTION_API_TOKEN', 'token_evolution')
-EVOLUTION_INSTANCE = os.getenv('EVOLUTION_INSTANCE', 'instance_padrao')
+EVOLUTION_API_URL = os.getenv('EVOLUTION_API_URL')
+EVOLUTION_API_TOKEN = os.getenv('EVOLUTION_API_TOKEN')
+EVOLUTION_INSTANCE = os.getenv('EVOLUTION_INSTANCE')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
+# Validação de Segurança: Impede o sistema de subir sem senha mestre
+if not ADMIN_PASSWORD:
+    logging.critical("🚨 VARIÁVEL DE AMBIENTE 'ADMIN_PASSWORD' NÃO DETECTADA. O SISTEMA NÃO IRÁ INICIAR POR SEGURANÇA.")
+    raise RuntimeError("Erro de Segurança: ADMIN_PASSWORD ausente.")
 
 # Configurações do banco de dados
 DB_PATH = os.getenv('DB_PATH', 'database/escola.db')

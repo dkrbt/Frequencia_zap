@@ -90,3 +90,93 @@ class Processor:
         except Exception as e:
             logger.error(f"Erro inesperado no Processor: {e}")
             return pd.DataFrame()
+
+    def processar_faltas_e_gerar_mensagens(self, lista_faltas_scraped):
+        """
+        Salva as faltas mineradas no scraper, busca os telefones e gera o corpo da mensagem.
+        :param lista_faltas_scraped: Lista de dicts [{'matricula': '...', 'nome': '...'}]
+        :return: DataFrame com dados e mensagem formatada
+        """
+        try:
+            if not lista_faltas_scraped:
+                logger.info("Nenhuma falta minerada pelo Scraper para processar.")
+                return pd.DataFrame()
+
+            # Datas: YYYY-MM-DD para o banco, DD/MM/YYYY para a mensagem
+            data_db = datetime.now().strftime('%Y-%m-%d')
+            data_msg = datetime.now().strftime('%d/%m/%Y')
+
+            # 1. Extrair matrículas e salvar no banco
+            matriculas = [f['matricula'] for f in lista_faltas_scraped]
+            self.db_handler.salvar_faltas_do_dia(matriculas, data_db)
+
+            # 2. Buscar dados completos (Telefone, Nome DB, Turma) via INNER JOIN
+            alunos_para_disparo = self.db_handler.buscar_alunos_para_disparo(data_db)
+
+            if not alunos_para_disparo:
+                logger.warning(f"Faltas registradas, mas nenhum aluno encontrado na base de contatos para o dia {data_db}.")
+                return pd.DataFrame()
+
+            # 3. Gerar DataFrame e montar a mensagem final
+            df = pd.DataFrame(alunos_para_disparo)
+            
+            msg_template = (
+                "Prezado(a) responsável pelo(a) {nome_aluno}, "
+                "estamos entrando em contato para avisar que hoje, {data_hoje}, "
+                "ele(a) não veio à unidade de ensino. Favor entrar em contato com a coordenação."
+            )
+
+            df['message'] = df.apply(
+                lambda row: msg_template.format(
+                    nome_aluno=row['nome_aluno'], 
+                    data_hoje=data_msg
+                ), axis=1
+            )
+
+            # Padroniza nomes de colunas para o app.py
+            df.rename(columns={
+                'nome_aluno': 'student_name',
+                'telefone_responsavel': 'guardian_phone'
+            }, inplace=True)
+
+            logger.info(f"Processamento concluído: {len(df)} mensagens geradas para disparo.")
+            return df
+
+        except Exception as e:
+            logger.error(f"Erro no processamento de faltas do scraper: {e}")
+            return pd.DataFrame()
+
+    def carregar_e_formatar_faltas_do_banco(self, data_db):
+        """
+        Busca dados já existentes no banco e formata o DataFrame.
+        """
+        try:
+            alunos_para_disparo = self.db_handler.buscar_alunos_para_disparo(data_db)
+            if not alunos_para_disparo:
+                return pd.DataFrame()
+
+            data_msg = datetime.strptime(data_db, '%Y-%m-%d').strftime('%d/%m/%Y')
+            df = pd.DataFrame(alunos_para_disparo)
+            
+            msg_template = (
+                "Prezado(a) responsável pelo(a) {nome_aluno}, "
+                "estamos entrando em contato para avisar que hoje, {data_hoje}, "
+                "ele(a) não veio à unidade de ensino. Favor entrar em contato com a coordenação."
+            )
+
+            df['message'] = df.apply(
+                lambda row: msg_template.format(
+                    nome_aluno=row['nome_aluno'], 
+                    data_hoje=data_msg
+                ), axis=1
+            )
+
+            df.rename(columns={
+                'nome_aluno': 'student_name',
+                'telefone_responsavel': 'guardian_phone'
+            }, inplace=True)
+
+            return df
+        except Exception as e:
+            logger.error(f"Erro ao carregar do banco: {e}")
+            return pd.DataFrame()

@@ -3,10 +3,10 @@ import json
 import base64
 
 # Configurações do seu docker-compose.yml
-API_URL = "http://localhost:8090"
-API_KEY = "d" 
-INSTANCE_NAME = "Leo TESTE" # Nome da instância (pode ser qualquer um)
-NUMERO_DESTINO = "556199794997"
+API_URL = "http://localhost:8080"
+API_KEY = "sua_chave_global_d" 
+INSTANCE_NAME = "cedom_bot" 
+NUMERO_DESTINO = "556192164700"
 
 headers = {
     "apikey": API_KEY,
@@ -46,7 +46,7 @@ def enviar_mensagem():
             "delay": 1200,
             "presence": "composing"
         },
-        "text": "Olá! Esta é uma mensagem de teste do sistema sendo conectada via Evolution API 🚀"
+        "text": "Mensagem enviada de forma automatica pelo sistema evolutio, To enviando para teste."
     }
     
     response = requests.post(url, headers=headers, json=payload)

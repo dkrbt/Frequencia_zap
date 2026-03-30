@@ -1,0 +1,13 @@
+{
+  "name": "whatsapp_gateway",
+  "version": "1.0.0",
+  "description": "Gateway de comunicação com Evolution API",
+  "main": "sender.js",
+  "scripts": {
+    "start": "node sender.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.2"
+  }
+}

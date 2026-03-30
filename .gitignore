@@ -1,0 +1,52 @@
+# Diretórios e extensões do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Ambientes Virtuais
+venv/
+.venv/
+env/
+.env/
+
+# Configurações sensíveis (IMPORTANTE NÃO SUBIR PARA O GIT)
+.env
+.env.local
+
+# Banco de Dados (não subimos o banco local para o repositório principal, pois os dados são sensíveis)
+*.db
+*.sqlite3
+database/*.db
+
+# Logs
+logs/
+*.log
+
+# Pastas de Instâncias e Banco de Dados do Evolution API (Via Docker)
+evolution_db_data/
+evolution_instances/
+evolution_store/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db

@@ -285,8 +285,16 @@ elif menu == "📲 Disparar Faltas":
                     
                     progress_bar.progress((i + 1) / len(to_send))
                 
+                status_text.empty()  # Limpa o texto "Enviando para..."
                 st.success(f"🎊 Finalizado! {success_count} mensagens enviadas.")
+                
+                # Remove a tabela da memória
                 del st.session_state['absences_to_send']
+                
+                # Dá um pequeno tempo e atualiza a tela
+                import time
+                time.sleep(2.5)
+                st.rerun()
 
 # --- PÁGINA: HISTÓRICO ---
 elif menu == "📑 Histórico de Envios":

@@ -4,7 +4,7 @@ import os
 import logging
 import sqlite3
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 from backend_processor.db_importer import process_excel, process_xml, extract_data_for_db
@@ -67,6 +67,7 @@ def get_evolution_status():
 # --- NAVEGAÇÃO LATERAL ---
 st.sidebar.title("🚀 Frequencia_zap")
 st.sidebar.markdown(f"**Instância:** `{EVOLUTION_INSTANCE}`")
+
 
 # Status do SIAP na Sidebar
 if 'siap_session' in st.session_state and st.session_state['siap_session']:
@@ -302,3 +303,29 @@ elif menu == "📑 Histórico de Envios":
             st.dataframe(hist_df, use_container_width=True, hide_index=True)
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
+
+# Floating button to open Evolution manager
+st.markdown(
+    """
+    <style>
+    .floating-btn {
+        position: fixed;
+        width: 56px;
+        height: 56px;
+        bottom: 24px;
+        right: 24px;
+        background-color: #25D366;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        font-size: 24px;
+        line-height: 56px;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    </style>
+    <a href="http://localhost:8080/manager" target="_blank" class="floating-btn">📲</a>
+    """,
+    unsafe_allow_html=True,
+)

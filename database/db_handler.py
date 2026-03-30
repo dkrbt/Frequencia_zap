@@ -23,6 +23,7 @@ class DBHandler:
                         student_name TEXT NOT NULL,
                         guardian_phone TEXT NOT NULL,
                         date_sent TEXT NOT NULL,
+                        time_sent TEXT NOT NULL,
                         UNIQUE(student_name, guardian_phone, date_sent)
                     )
                 ''')
@@ -79,9 +80,9 @@ class DBHandler:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute('''
-                    INSERT OR IGNORE INTO notifications (student_name, guardian_phone, date_sent)
-                    VALUES (?, ?, ?)
-                ''', (student_name, guardian_phone, today_date))
+                    INSERT OR IGNORE INTO notifications (student_name, guardian_phone, date_sent, time_sent)
+                    VALUES (?, ?, ?, ?)
+                ''', (student_name, guardian_phone, today_date, datetime.now().strftime('%H:%M:%S')))
                 logger.info(f"Notificação registrada para {student_name}.")
         except sqlite3.Error as e:
             logger.error(f"Erro ao registrar envio: {e}")

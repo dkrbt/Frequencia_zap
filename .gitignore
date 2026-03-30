@@ -60,3 +60,4 @@ test_siap.py
 *.exe
 *.spec
 debug_html/
+stop_services.py

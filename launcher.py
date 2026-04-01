@@ -38,7 +38,8 @@ def start_services():
     # 3. Abrir Páginas no Navegador
     log("Abrindo painéis no navegador...")
     webbrowser.open("http://localhost:8501") # Painel Streamlit
-    webbrowser.open("http://localhost:8080/dashboard") # Dashboard Evolution API
+    webbrowser.open("http://localhost:8081/manager") # Alterado para manager pois /dashboard pode não existir na porta 8081 exposta se for a v2 ou algo assim no browser. Na verdade a Evolution usa /manager ou /dashboard dependendo da versão, mas o usuário quer o acesso. No docker-compose vi DONT_SHOW_DASHBOARD=false. Mas a URL padrão da Evolution é em geral /manager ou /dashboard. No app.py eu troquei para /manager. Vou manter consistente com o app.py. index 32 
+
 
     # 4. Iniciar Streamlit (Este comando manterá o terminal aberto)
     log("Lançando Interface Web do Frequencia_zap...")

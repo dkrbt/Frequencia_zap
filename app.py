@@ -333,7 +333,7 @@ st.markdown(
         z-index: 1000;
     }
     </style>
-    <a href="http://localhost:8080/manager" target="_blank" class="floating-btn">📲</a>
+    <a href="http://localhost:8081/manager" target="_blank" class="floating-btn">📲</a>
     """,
     unsafe_allow_html=True,
 )

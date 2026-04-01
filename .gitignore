@@ -51,13 +51,13 @@ evolution_store/
 .DS_Store
 Thumbs.db
 
-# Processamento de dados e Scrapers (Manter Local)
-backend_processor/
+# Relatórios e Scrapers (Manter Scrapers, Ignorar Reports)
+debug_html/
+bandit_report.txt
 
 # Scripts de Teste (Testers) e Binários locais
 tester_evolution.py
 test_siap.py
 *.exe
 *.spec
-debug_html/
 stop_services.py

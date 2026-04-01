@@ -15,6 +15,9 @@ EVOLUTION_API_TOKEN = os.getenv('EVOLUTION_API_TOKEN')
 EVOLUTION_INSTANCE = os.getenv('EVOLUTION_INSTANCE')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
+# Contato da Coordenação para incluir nas mensagens
+NUM_COORD_CEDOM = os.getenv('NUM_COORD_CEDOM')
+
 # Validação de Segurança: Impede o sistema de subir sem senha mestre
 if not ADMIN_PASSWORD:
     logging.critical("🚨 VARIÁVEL DE AMBIENTE 'ADMIN_PASSWORD' NÃO DETECTADA. O SISTEMA NÃO IRÁ INICIAR POR SEGURANÇA.")

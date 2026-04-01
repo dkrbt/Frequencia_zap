@@ -2,7 +2,21 @@ import pandas as pd
 import logging
 from datetime import datetime
 
+from config import NUM_COORD_CEDOM
+
 logger = logging.getLogger(__name__)
+
+# Template de mensagem unificado para garantir consistência
+MSG_TEMPLATE_BASE = (
+    "Prezado(a) responsável pelo(a) {nome_aluno}, "
+    "estamos entrando em contato para avisar que hoje, {data_hoje}, "
+    "ele(a) não veio à unidade de ensino."
+)
+
+if NUM_COORD_CEDOM:
+    MSG_TEMPLATE = f"{MSG_TEMPLATE_BASE} Favor entrar em contato com a coordenação: {NUM_COORD_CEDOM}."
+else:
+    MSG_TEMPLATE = f"{MSG_TEMPLATE_BASE} Favor entrar em contato com a coordenação."
 
 class Processor:
     def __init__(self, db_handler):
@@ -51,7 +65,7 @@ class Processor:
                 student_info = self.db_handler.get_student_info(matricula)
                 
                 if student_info:
-                    nome, tel_resp, tel_cel = student_info
+                    nome, tel_resp, tel_cel, turma = student_info
                     
                     phone = tel_resp if tel_resp else tel_cel
                     if not phone:
@@ -59,19 +73,14 @@ class Processor:
                         continue
                     
                     data_hoje = datetime.now().strftime('%d/%m/%Y')
-                    NUM_COORD_CEDOM = "556198931247"
-                    nome_aluno = nome
-
-                    mensagem = (
-                        f"Prezado(a) responsável pelo(a) {nome_aluno}, "
-                        f"estamos entrando em contato para avisar que hoje, {data_hoje}, "
-                        f"ele(a) não veio à unidade de ensino. Favor entrar em contato com a coordenação: {NUM_COORD_CEDOM}."
-                    )
+                    mensagem = MSG_TEMPLATE.format(nome_aluno=nome, data_hoje=data_hoje)
                         
                     enriched_records.append({
                         'student_name': nome,
                         'guardian_phone': phone,
-                        'message': mensagem
+                        'message': mensagem,
+                        'matricula': matricula,
+                        'turma': turma if turma else ''
                     })
                 else:
                     logger.warning(f"Falta (mat {matricula}) sem dados no banco físico XML/XLSX. Ignore.")
@@ -120,14 +129,8 @@ class Processor:
             # 3. Gerar DataFrame e montar a mensagem final
             df = pd.DataFrame(alunos_para_disparo)
             
-            msg_template = (
-                "Prezado(a) responsável pelo(a) {nome_aluno}, "
-                "estamos entrando em contato para avisar que hoje, {data_hoje}, "
-                "ele(a) não veio à unidade de ensino. Favor entrar em contato com a coordenação."
-            )
-
             df['message'] = df.apply(
-                lambda row: msg_template.format(
+                lambda row: MSG_TEMPLATE.format(
                     nome_aluno=row['nome_aluno'], 
                     data_hoje=data_msg
                 ), axis=1
@@ -158,14 +161,8 @@ class Processor:
             data_msg = datetime.strptime(data_db, '%Y-%m-%d').strftime('%d/%m/%Y')
             df = pd.DataFrame(alunos_para_disparo)
             
-            msg_template = (
-                "Prezado(a) responsável pelo(a) {nome_aluno}, "
-                "estamos entrando em contato para avisar que hoje, {data_hoje}, "
-                "ele(a) não veio à unidade de ensino. Favor entrar em contato com a coordenação."
-            )
-
             df['message'] = df.apply(
-                lambda row: msg_template.format(
+                lambda row: MSG_TEMPLATE.format(
                     nome_aluno=row['nome_aluno'], 
                     data_hoje=data_msg
                 ), axis=1

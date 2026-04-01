@@ -16,7 +16,7 @@ EVOLUTION_INSTANCE = os.getenv('EVOLUTION_INSTANCE')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 # Contato da Coordenação para incluir nas mensagens
-NUM_COORD_CEDOM = os.getenv('NUM_COORD_CEDOM')
+COORD_PHONE_NUMBER = os.getenv('COORD_PHONE_NUMBER')
 
 # Validação de Segurança: Impede o sistema de subir sem senha mestre
 if not ADMIN_PASSWORD:

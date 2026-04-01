@@ -1,58 +1,123 @@
+import os
+import sys
 import subprocess
 import time
 import webbrowser
-import os
-import sys
+import logging
 
-# Configurações de Caminhos (Relativos ao local do executável)
-if getattr(sys, 'frozen', False):
-    BASE_DIR = os.path.dirname(sys.executable)
-else:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 1. Obter o diretório base absoluto do projeto dinamicamente
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
-PYTHON_PATH = os.path.join(BASE_DIR, ".venv", "Scripts", "python.exe")
-STREAMLIT_PATH = os.path.join(BASE_DIR, "app.py")
+# Configurações de caminhos absolutos
+venv_python = os.path.join(base_dir, ".venv", "Scripts", "python.exe")
+app_script = os.path.join(base_dir, "app.py")
+env_file = os.path.join(base_dir, ".env")
 
-def log(msg):
-    print(f"[*] {msg}")
+def log_section(title):
+    print("\n" + "=" * 60)
+    print(f" {title} ".center(60, "="))
+    print("=" * 60)
 
-def start_services():
-    print("=" * 50)
-    print(" INICIALIZADOR FREQUENCIA_ZAP ".center(50))
-    print("=" * 50)
-
-    # 1. Iniciar Docker
-    log("Ligando Docker (Evolution API + Postgres)...")
+def verificar_configuracao():
+    """
+    Verifica se os arquivos essenciais e o ambiente virtual estão prontos.
+    """
+    log_section("CHECAGEM DE INTEGRIDADE")
+    
+    # 1. Verificar .env
+    if not os.path.exists(env_file):
+        print("[ERRO] Arquivo de configuração .env não encontrado!")
+        print("Causa provável: O instalador não finalizou a etapa de configuração.")
+        return False
+    
+    # 2. Verificar ADMIN_PASSWORD no .env
+    with open(env_file, 'r') as f:
+        content = f.read()
+        if "ADMIN_PASSWORD=" not in content or "ADMIN_PASSWORD=" + "\n" in content:
+            print("[ERRO] Variável ADMIN_PASSWORD está ausente ou vazia no seu .env!")
+            print("Causa provável: Você não definiu a senha durante a instalação.")
+            return False
+            
+    # 3. Verificar .venv e interpretador
+    if not os.path.exists(venv_python):
+        print(f"[ERRO] Ambiente virtual não encontrado em: {venv_python}")
+        print("Causa provável: O 'instalar.bat' falhou ou foi interrompido.")
+        return False
+        
+    # 4. Verificar se o Streamlit está instalado no venv
     try:
-        subprocess.run(["docker-compose", "up", "-d"], check=True, cwd=BASE_DIR)
-        log("Docker [OK]")
-    except Exception as e:
-        log(f"ERRO ao ligar Docker: {e}")
-        input("\nPressione Enter para sair...")
-        return
+        subprocess.run([venv_python, "-c", "import streamlit"], check=True, capture_output=True)
+        print("[OK] Ambiente Python verificado.")
+    except subprocess.CalledProcessError:
+        print("[ERRO] A biblioteca 'streamlit' não foi instalada no seu ambiente virtual.")
+        print("Sugestão: Tente rodar o 'instalar.bat' como administrador e verifique a sua internet.")
+        return False
+        
+    return True
 
-    # 2. Aguardar API responder (Health Check simples)
-    log("Aguardando inicialização da API (pode levar alguns segundos)...")
-    time.sleep(10) # Pausa inicial
-
-    # 3. Abrir Páginas no Navegador
-    log("Abrindo painéis no navegador...")
-    webbrowser.open("http://localhost:8501") # Painel Streamlit
-    webbrowser.open("http://localhost:8081/manager") # Alterado para manager pois /dashboard pode não existir na porta 8081 exposta se for a v2 ou algo assim no browser. Na verdade a Evolution usa /manager ou /dashboard dependendo da versão, mas o usuário quer o acesso. No docker-compose vi DONT_SHOW_DASHBOARD=false. Mas a URL padrão da Evolution é em geral /manager ou /dashboard. No app.py eu troquei para /manager. Vou manter consistente com o app.py. index 32 
-
-
-    # 4. Iniciar Streamlit (Este comando manterá o terminal aberto)
-    log("Lançando Interface Web do Frequencia_zap...")
-    cmd = [PYTHON_PATH, "-m", "streamlit", "run", STREAMLIT_PATH, "--server.address", "0.0.0.0"]
+def iniciar_docker():
+    """Inicia os serviços do Docker."""
+    log_section("INICIANDO INFRAESTRUTURA (DOCKER)")
     
     try:
-        # Usamos subprocess.run para manter o terminal preso enquanto o streamlit roda
-        subprocess.run(cmd, cwd=BASE_DIR)
-    except KeyboardInterrupt:
-        log("Desligando por interrupção do usuário (Ctrl+C)...")
+        # Executa o docker-compose up -d
+        result = subprocess.run(
+            ['docker-compose', 'up', '-d'], 
+            cwd=base_dir, 
+            capture_output=True, 
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print("[OK] Banco de Dados e WhatsApp API ativos.")
+        else:
+            print(f"[!] Aviso Docker: {result.stderr}")
+            
+    except FileNotFoundError:
+        print("[ERRO] Docker Desktop não detectado no sistema.")
+        input("\nPressione Enter para fechar...")
+        sys.exit(1)
+
+def iniciar_streamlit():
+    """Inicia a interface do Streamlit."""
+    log_section("LANÇANDO INTERFACE MAMÃE CORUJA")
+    
+    try:
+        # Comando mais robusto para rodar o Streamlit
+        cmd = [
+            venv_python, "-m", "streamlit", "run", app_script, 
+            "--server.port", "8501", 
+            "--server.address", "0.0.0.0", 
+            "--server.headless", "true"
+        ]
+        
+        print(f"[*] Acompanhe em: http://localhost:8501")
+        
+        # Abre o navegador
+        time.sleep(3)
+        webbrowser.open("http://localhost:8501")
+
+        # Inicia o processo
+        process = subprocess.Popen(
+            cmd, 
+            cwd=base_dir,
+            stdout=None, # Herda stdout para mostrar erro no console
+            stderr=None,
+            text=True
+        )
+        
+        print("\n--- SISTEMA ONLINE (Logs abaixo) ---")
+        process.wait()
+            
     except Exception as e:
-        log(f"ERRO ao iniciar Streamlit: {e}")
-        input("\nPressione Enter para sair...")
+        print(f"\n[ERRO CRÍTICO] Falha ao lançar Streamlit: {e}")
+        input("\nPressione Enter para fechar...")
 
 if __name__ == "__main__":
-    start_services()
+    if verificar_configuracao():
+        iniciar_docker()
+        iniciar_streamlit()
+    else:
+        print("\n[FALHA] O sistema não pôde ser iniciado por problemas de configuração.")
+        input("\nPressione Enter para sair e tente reinstalar...")
+        sys.exit(1)

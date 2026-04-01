@@ -5,3 +5,5 @@ openpyxl
 lxml
 python-dotenv
 beautifulsoup4
+watchdog
+pyyaml

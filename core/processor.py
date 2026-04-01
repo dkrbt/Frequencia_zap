@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 from datetime import datetime
 
-from config import NUM_COORD_CEDOM
+from config import COORD_PHONE_NUMBER
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,8 @@ MSG_TEMPLATE_BASE = (
     "ele(a) não veio à unidade de ensino."
 )
 
-if NUM_COORD_CEDOM:
-    MSG_TEMPLATE = f"{MSG_TEMPLATE_BASE} Favor entrar em contato com a coordenação: {NUM_COORD_CEDOM}."
+if COORD_PHONE_NUMBER:
+    MSG_TEMPLATE = f"{MSG_TEMPLATE_BASE} Favor entrar em contato com a coordenação: {COORD_PHONE_NUMBER}."
 else:
     MSG_TEMPLATE = f"{MSG_TEMPLATE_BASE} Favor entrar em contato com a coordenação."
 

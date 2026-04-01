@@ -4,7 +4,7 @@ from config import LOG_LEVEL, LOG_FILE
 from services.school_api import SchoolAPI
 from services.whatsapp_engine import WhatsAppEngine
 from core.processor import Processor
-from database.db_handler import DBHandler
+from core.db_handler import DBHandler
 
 logger = logging.getLogger(__name__)
 

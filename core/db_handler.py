@@ -139,13 +139,15 @@ class DBHandler:
 
     def buscar_alunos_para_disparo(self, data_hoje):
         """
-        Gera o conjunto completo de dados (JOIN) para o disparo das mensagens.
+        Gera o conjunto completo de dados (JOIN) para o disparo das mensagens,
+        filtrando apenas aqueles que ainda NÃO receberam notificação hoje.
         :param data_hoje: Data no formato YYYY-MM-DD
         """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
+                # A query agora verifica na tabela 'notifications' para evitar duplicidade no FRONT-END
                 cursor.execute('''
                     SELECT 
                         ac.matricula, 
@@ -155,6 +157,12 @@ class DBHandler:
                     FROM registro_faltas rf
                     INNER JOIN alunos_contatos ac ON rf.matricula = ac.matricula
                     WHERE rf.data_falta = ?
+                    AND NOT EXISTS (
+                        SELECT 1 FROM notifications n
+                        WHERE n.student_name = ac.nome 
+                        AND n.guardian_phone = COALESCE(NULLIF(ac.telefone_responsavel, ''), ac.telefone_celular)
+                        AND n.date_sent = rf.data_falta
+                    )
                 ''', (data_hoje,))
                 return [dict(row) for row in cursor.fetchall()]
         except sqlite3.Error as e:

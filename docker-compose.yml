@@ -3,14 +3,15 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: evolution_postgres_cedom
+    container_name: evolution_postgres_db
     restart: always
+    env_file: .env
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=evolution_db
+      # O POSTGRES_PASSWORD é herdado do .env via env_file
     volumes:
-      - ./evolution_db_data:/var/lib/postgresql/data
+      - evolution_db_data_vol:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -19,25 +20,29 @@ services:
 
   evolution-api:
     image: evoapicloud/evolution-api:latest
-    container_name: evolution_api_cedom
+    container_name: evolution_api_server
     restart: always
     ports:
       - "8081:8080"
+    env_file: .env  # Todas as variaveis vêm do arquivo local .env para evitar erros de heranca
     environment:
       - SERVER_URL=http://localhost:8081
-      - AUTHENTICATION_API_KEY=${AUTHENTICATION_API_KEY}
-      - DONT_SHOW_DASHBOARD=false
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=false
       - DATABASE_PROVIDER=postgresql
+      # Interpolação forçada da URI de conexão
       - DATABASE_CONNECTION_URI=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/evolution_db?schema=public
-      - WEBHOOK_GLOBAL_ENABLED=false
-      - CACHE_REDIS_ENABLED=false
+      - DONT_SHOW_DASHBOARD=false
       - CACHE_LOCAL_ENABLED=true
       - INTEGRATION_WHATSAPP_BAILEYS=true
-      - BAILEYS_SYNC_FULL_HISTORY=true
-      - CONFIG_SESSION_PHONE_VERSION=2,3000,1025062854
     volumes:
-      - ./evolution_instances:/evolution/instances
-      - ./evolution_store:/evolution/store
+      - evolution_instances_vol:/evolution/instances
+      - evolution_store_vol:/evolution/store
     depends_on:
       postgres:
         condition: service_healthy
+
+volumes:
+  evolution_db_data_vol:
+  evolution_instances_vol:
+  evolution_store_vol:
